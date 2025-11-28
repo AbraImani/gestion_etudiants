@@ -1,4 +1,7 @@
 
+import  json
+from sape_s1 import BASE_DONNEES_ETUDIANTS
+
 class Etudiant:
     def __init__(self,id,nom,Type,notes):
         self.id=id
@@ -6,15 +9,11 @@ class Etudiant:
         self.Type= Type
         self.notes=notes
 
-
-
-    def __str__(self,id, nom ,notes: list):
-        print("-" * 34)
-        print(f"|{"ID":<5}|{"Noms":^15}|{"Moyennes":^10}|")
-        print("-" * 34)
-        self.moyenne = sum(note for cours,note in notes)
-        print(f"|{self.notes:<5}|{self.nom:^15}|{self.moyenne :^10.2f}|")
-        print("-" * 34)
+    def __str__(self):
+        if self.Type == "master":
+            return f" EtudiantMaster ({self.id},{self.nom},{self.Type},{self.notes})"
+        else:
+            return f" Etudiant ({self.id},{self.nom},{self.Type},{self.notes})"
 
 class EtudiantMaster(Etudiant):
 
@@ -25,51 +24,42 @@ class EtudiantMaster(Etudiant):
         else:
             return 0.0
 
+def importer_donnees(nom_fichier):
+    liste_objet=[]
 
+    with open(nom_fichier,"r",encoding='utf-8') as f:
+        liste = json.load(f)
+        for etudiant in liste:
+            id = etudiant["id"]
+            nom = etudiant["nom"]
+            Type = etudiant["Type"]
+            notes = [tuple(C) for C in etudiant["notes"]]
+            if Type == "master":
+                liste_objet.append(EtudiantMaster(id,nom,Type,notes))
+            else:
+                liste_objet.append(Etudiant(id,nom,Type,notes))
+    return liste_objet
 
-BASE_DONNEES_ETUDIANTS = [
-    Etudiant("E001", "Nathan cirhuza","under graduate", [
-        ("Algo", 18),
-        ("Anglais", 17),
-             ("Algebre", 19)
-         ]),
-    Etudiant("E002", "Ghislain cirhuza","under graduate", [
-        ("Algo", 14),
-        ("Anglais", 15),
-        ("Algebre", 10)
-    ]),
-    Etudiant("E003", "Joseph","under graduate",[
-        ("Algo", 12),
-        ("Anglais", 10),
-        ("Algebre", 9)
-    ]),
-    Etudiant("E004", "Matin","", [
-        ("Algo", 10),
-        ("Anglais", 15),
-        ("Algebre", 13)
-    ], ),
-    Etudiant("E005", "Jean", "under graduate", [
-        ("Algo", 17),
-        ("Anglais", 15),
-        ("Algebre", 12)
-    ]),
-    EtudiantMaster("E006", "Fabrice", "master", [
-        ("Algo", 16),
-        ("Anglais", 11),
-        ("Algebre", 12)
-    ], ),
-    EtudiantMaster("E007", "Joseph", "master", [
-        ("Algo", 10),
-        ("Anglais", 12),
-        ("Algebre", 11)
-    ], ),
-]
+def exporter_en_json(etudiants :list,nom_fichier):
+    liste_etudiants =[]
+    for e in etudiants:
+        d = {
+            'id':e.id,
+            'nom':e.nom,
+            'Type':e.Type,
+            'notes': e.notes
+        }
+        liste_etudiants.append(d)
+    with open(nom_fichier,"w",encoding="utf-8") as f:
+        json.dump(liste_etudiants,f,indent=2)
+
 
 
 #fonction pour afficher toutes les informations d'un etudiant
 def trouver_etudiant(ID):
     trouve = False
     for etudiant in BASE_DONNEES_ETUDIANTS:
+        print(etudiant.id)
         if  ID == etudiant.id:
             print(f"|| ID :{etudiant.id} ")
             print(f"|| Type : {etudiant.Type}")
